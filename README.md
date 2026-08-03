@@ -1,6 +1,6 @@
 # Job Intelligence Platform
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/i-am-dexter/job-intelligence-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/i-am-dexter/job-intelligence-platform/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 An AI-powered job intelligence platform — not a job board. It parses your resume, builds a
