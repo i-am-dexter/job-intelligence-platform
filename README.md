@@ -27,7 +27,8 @@ option (Anthropic) are available as drop-in swaps if you want them; see
 
 ## Quick start
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for full setup (Docker and local, Windows and Unix).
+Requires Docker + Git — see [Prerequisites](DEPLOYMENT.md#prerequisites) for Windows/Linux
+install steps (and the no-Docker option) if you don't have them yet.
 
 ```bash
 cp .env.example .env

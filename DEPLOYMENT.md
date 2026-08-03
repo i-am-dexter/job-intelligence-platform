@@ -1,8 +1,30 @@
 # Deployment
 
-## Option A — Docker Compose (recommended)
+## Prerequisites
 
-Requires Docker + Docker Compose.
+### Docker path (recommended — least setup)
+
+| | Windows | Linux (including WSL) |
+|---|---|---|
+| **Docker** | Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) — bundles the engine, daemon, and Compose, all pre-wired. | Install the full **engine**, not just the CLI: `sudo apt install docker.io` (Debian/Ubuntu/Kali) or see [Docker's install docs](https://docs.docker.com/engine/install/) for other distros, then `sudo systemctl enable --now docker`. |
+| **Git** | [git-scm.com](https://git-scm.com/download/win) or `winget install Git.Git` | `sudo apt install git` |
+
+⚠️ On Linux, `docker --version` succeeding does **not** mean Docker is fully installed — the CLI
+and the engine/daemon are separate packages, and it's easy to end up with just the CLI. Confirm
+with `docker ps` (should print an empty table, not a connection error) before continuing.
+
+Minimum resources: ~8GB RAM, ~10GB free disk (container images + the ~2GB Ollama model).
+
+### Local / no-Docker path
+
+| | Windows | Linux |
+|---|---|---|
+| **Python** | 3.12+ from [python.org](https://python.org) or `winget install Python.Python.3.12` | `sudo apt install python3.12 python3.12-venv` |
+| **Node.js** | 22+ from [nodejs.org](https://nodejs.org) or `winget install OpenJS.NodeJS.LTS` | `sudo apt install nodejs npm` (or [nvm](https://github.com/nvm-sh/nvm) for a current version) |
+| **Ollama** (optional, free local AI) | [ollama.com/download](https://ollama.com/download) | `curl -fsSL https://ollama.com/install.sh \| sh` |
+| **Postgres** | Not required — SQLite is used automatically | Same |
+
+## Option A — Docker Compose (recommended)
 
 ```bash
 cp .env.example .env
