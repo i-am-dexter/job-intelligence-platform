@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-job_intel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-job_intel}
+      POSTGRES_DB: ${POSTGRES_DB:-job_intelligence}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-job_intel}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Bundled free, local LLM -- no API key, no signup, no cost. This is what LLM_PROVIDER=ollama
+  # (the default) talks to for resume parsing/tailoring assistance.
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  # One-shot job that pulls the configured model into the ollama service above on first start.
+  # Safe to re-run: `ollama pull` is a no-op once the model is already present.
+  ollama-pull:
+    image: ollama/ollama:latest
+    restart: "no"
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "for i in $$(seq 1 30); do ollama pull ${OLLAMA_MODEL:-llama3.2} && break || sleep 2; done"
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-job_intel}:${POSTGRES_PASSWORD:-job_intel}@postgres:5432/${POSTGRES_DB:-job_intelligence}
+      OLLAMA_BASE_URL: http://ollama:11434
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    volumes:
+      - resume_storage:/app/storage
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # NEXT_PUBLIC_* vars are baked in at build time, not read at container runtime -- this
+        # must be the URL the *browser* can reach, i.e. the host machine, not the Docker service name.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+  resume_storage:
+  ollama_data:
