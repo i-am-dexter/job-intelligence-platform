@@ -11,7 +11,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-job_intel}"]
+      # Must specify -d: pg_isready defaults to a database named after the user (job_intel),
+      # not POSTGRES_DB (job_intelligence) -- without -d this never succeeds and every
+      # service with `depends_on: condition: service_healthy` waits on it forever.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-job_intel} -d ${POSTGRES_DB:-job_intelligence}"]
       interval: 5s
       timeout: 5s
       retries: 10
